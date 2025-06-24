@@ -131,18 +131,31 @@ This modular structure allows you to:
 
 ## Future Improvements
 
-This tool can be expanded to correct any BOLD field with a controlled vocabulary, such as:
+he current project focuses on standardizing country names using alternate-name mapping and typo correction, based on a controlled vocabulary (the GeoNames country list). This same approach can be generalized to any other field in the BOLD system that has a controlled vocabulary, such as:
 
-continent
-
-habitat
-
-collection_method
+region or continent
 
 tissue_type
 
-The BOLD Controlled Data Model (BCDM) defines all standard fields and valid values. You can follow the same structure: fetch controlled terms → apply fuzzy matching → correct values.
----
+collection_method
+
+institution_storing
+
+identification_method
+
+The workflow would follow the same logic:
+
+Fetch or define the controlled vocabulary (from BCDM, GeoNames, GBIF, etc.)
+
+Create an alternate-name dictionary for common abbreviations or variants
+
+Apply fuzzy matching to correct typos or misspellings
+
+Standardize values before submitting or analyzing the dataset
+
+By adapting the field and source vocabulary, this codebase becomes a reusable framework for validating any controlled-field in biodiversity data — making it especially useful for preparing datasets for submission to BOLD or GBIF.
+
+
 
 ## License
 
