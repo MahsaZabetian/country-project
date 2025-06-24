@@ -49,7 +49,7 @@ You need Python 3.7+ installed.
 
 3. Run the script:
    ```bash
-   python country_standardizer.py
+   python fetch_and_correct.py
    ```
 
 4. Results are printed and also saved to `corrected_countries.json`.
