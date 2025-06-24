@@ -131,10 +131,17 @@ This modular structure allows you to:
 
 ## Future Improvements
 
-- Load alternate names dynamically from GeoNames `alternateNames` field
-- Support for language-specific variants (e.g. French, Spanish)
-- Integration with BCDM validation pipelines
+This tool can be expanded to correct any BOLD field with a controlled vocabulary, such as:
 
+continent
+
+habitat
+
+collection_method
+
+tissue_type
+
+The BOLD Controlled Data Model (BCDM) defines all standard fields and valid values. You can follow the same structure: fetch controlled terms → apply fuzzy matching → correct values.
 ---
 
 ## License
