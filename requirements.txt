@@ -1,2 +1,5 @@
 requests
 rapidfuzz
+pandas
+country_converter
+tqdm
