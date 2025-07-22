@@ -123,7 +123,7 @@ This project currently focuses on country and province name cleaning, but the de
 
 3) Reuse classify_and_correct() for typo correction and matching.
 
-4)Apply to any BCDM field to prepare datasets for BOLD, GBIF, etc.
+4) Apply to any BCDM field to prepare datasets for BOLD, GBIF, etc.
 
 . This makes the tool a flexible framework for data standardization in biodiversity informatics.
 
