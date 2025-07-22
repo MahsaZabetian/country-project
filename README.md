@@ -1,27 +1,24 @@
 
 # Country Name Standardizer
 
-This project provides a simple Python tool to **automatically correct typos and standardize country names**, using official data from the [GeoNames API](https://www.geonames.org/). It supports:
-- Typo correction using fuzzy string matching
-- Mapping of alternate names (e.g. "UK", "USA", "Russia") to their standardized forms
-- Output to a clean, corrected JSON format
+This project provides a simple Python tool to automatically correct typos and standardize **country** and **province** names using official data from the [GeoNames API](https://www.geonames.org/).
 
----
+In addition to GeoNames, it also supports **custom standardization based on BOLD reference data**, stored locally in a `.tsv` file. This file contains the standardized country names used in the BOLD system.
 
 ## Problem Statement
 
-In many datasets—especially global biodiversity and geospatial data—country names may contain:
-- Typos (e.g. `"Untied States"`)
-- Informal abbreviations (e.g. `"UK"`, `"South Korea"`)
-- Historical or non-standard variants (e.g. `"Russia"` instead of `"Russian Federation"`)
+In many datasets—especially global biodiversity and geospatial data—country and province names may contain:
+- Typos (e.g. "Untied States")
+- Informal abbreviations (e.g. "UK", "South Korea")
+- Historical or non-standard variants (e.g. "Russia" instead of "Russian Federation")
 
-This tool automates the correction and standardization of such country names using:
+This tool automates the correction and standardization of such country an d province names using:
 - A dynamic list of valid countries from the **GeoNames API**
+- The standardized country names used in the BOLD system
 - Predefined aliases for common name variants
 - Fuzzy string matching via **RapidFuzz**
 
 ---
-
 ## Installation
 
 You need Python 3.7+ installed.
@@ -35,126 +32,100 @@ You need Python 3.7+ installed.
 
    Or manually:
    ```bash
-   pip install rapidfuzz requests
-   ```
-
----
+  pip install pandas requests tqdm rapidfuzz country_converter
+  
+  ---
 
 ## How to Use
 
-1. Register for a free GeoNames account:  
-   https://www.geonames.org/login
+. Register for a free GeoNames account:
+  https://www.geonames.org/login
 
-2. Update the `username` variable in the script with your GeoNames username.
+. Update the username variable in the script with your GeoNames username.
 
-3. Run the script:
-   ```bash
-   python fetch_and_correct.py
-   ```
+Ensure your BOLD reference file is named and located at:
+./data/BOLD_Geonames_mapping.tsv
 
-4. Results are printed and also saved to `corrected_countries.json`.
+Place your raw .tsv files (with a column named verbatim_value) inside:
+./data/raw/
 
----
+Run the script:
+
+bash
+Copy
+Edit
+python geo_name_cleaner_realdata_improved.py
+Cleaned files will be saved to:
+./data/cleaned/
 
 ## How It Works
 
 This tool combines three key strategies:
 
-1. **Dynamic list of valid names**:  
-   Using the GeoNames API, it fetches the latest list of official country names.
+1. fetch_provinces_from_geonames(username)
+Fetches first-order administrative divisions (provinces) from GeoNames and caches them locally.
 
-2. **Alternate name mapping**:  
-   A dictionary (`ALTERNATE_NAMES`) maps informal or common variants (like `"UK"`, `"USA"`) to their official equivalents.
+2. build_alternate_country_map()
+Builds a dictionary of alternate country names using country_converter, extended with common abbreviations (e.g., "UAE", "DRC").
 
-3. **Fuzzy matching with RapidFuzz**:  
-   If the name isn’t a direct match or in the alias list, we use [`rapidfuzz.process.extractOne`](https://maxbachmann.github.io/RapidFuzz/Usage/fuzz.html#rapidfuzz.process.extractOne) to find the closest match above a confidence threshold (default: 85%).
+3. load_reference_list(filepath)
+Loads standardized country names from a local .tsv file (from BOLD).
 
----
+4. classify_and_correct(...)
+Classifies user-entered names by:
 
-## How the Functions Work Together
+First checking the alternate name map
 
-### `fetch_country_names(username)`
-- Pulls a dynamic list of official country names from GeoNames.
-- Keeps the solution up-to-date and globally consistent.
+Then using rapidfuzz to find a fuzzy match in both country and province lists
 
-### `correct_typo(name, valid_names, threshold)`
-- First checks if the input name is a known alternate (like `"UK"`).
-- If not, applies fuzzy string matching using RapidFuzz to find the closest match.
-- Returns the corrected country name or `"Not Found"`.
+5. clean_all_files(...)
+Runs the full cleaning pipeline on all .tsv files in the input folder and saves them to the output folder with a standardized_value column.
 
-The script then loops through test names, applies the correction logic, and stores results in a JSON file.
+## Function Overview
 
----
+** build_alternate_country_map()
+  . Builds a map of alternate or informal country names to standardized ones. 
+  . Uses country_converter + custom logic.
 
-## Generalization to Other BCDM Fields
+** load_reference_list(filepath)
+. Loads official country names from a BOLD .tsv file.
 
-This tool is designed for **controlled vocabulary correction**, which is a core principle in the [BCDM (Biodiversity Contextual Data Model)](https://github.com/BOLDSystems/bcdm) project. Here's how you can generalize it:
+** fetch_provinces_from_geonames(username)
+. Fetches provinces via GeoNames and caches the result.
 
-- Replace the list of country names with any other controlled vocabulary (e.g. **sampling protocols**, **tissue types**, **collection methods**, etc.)
-- Expand the `ALTERNATE_NAMES` dictionary for common informal variants
-- Reuse the `correct_typo()` function for fuzzy correction
+** classify_and_correct(...)
+. Core classifier: returns "Canada (country)", "Ontario (province)", or "Not Found".
 
-This modular structure allows you to:
-- Easily standardize other fields defined in the [BCDM GitHub repo](https://github.com/BOLDSystems/bcdm/tree/main/controlled_vocabularies)
-- Clean and validate user-entered data in scientific datasets
+** clean_all_files(...)
+. Batch processes all raw .tsv files and saves the corrected versions.
 
----
 
-## Output Example
-
-```json
-[
-    {
-        "original": "Untied States",
-        "corrected": "United States"
-    },
-    {
-        "original": "UK",
-        "corrected": "United Kingdom"
-    },
-    {
-        "original": "Russsia",
-        "corrected": "Russian Federation"
-    },
-    {
-        "original": "Venzuela",
-        "corrected": "Venezuela"
-    },
-    {
-        "original": "South Corea",
-        "corrected": "South Korea"
-    }
-]
-```
-
----
 
 ## Future Improvements
 
-he current project focuses on standardizing country names using alternate-name mapping and typo correction, based on a controlled vocabulary (the GeoNames country list). This same approach can be generalized to any other field in the BOLD system that has a controlled vocabulary, such as:
+This project currently focuses on country and province name cleaning, but the design is modular and can be generalized to other controlled vocabulary fields in the BCDM model, such as:
 
-region or continent
+.region or continent
 
-tissue_type
+. tissue_type
 
-collection_method
+. collection_method
 
-institution_storing
+. institution_storing
 
-identification_method
+. identification_method
 
-The workflow would follow the same logic:
+## Generalization Strategy
 
-Fetch or define the controlled vocabulary (from BCDM, GeoNames, GBIF, etc.)
+1) Replace the .tsv reference file with the appropriate controlled vocabulary.
 
-Create an alternate-name dictionary for common abbreviations or variants
+2) Expand the alternate name dictionary with known informal values.
 
-Apply fuzzy matching to correct typos or misspellings
+3) Reuse classify_and_correct() for typo correction and matching.
 
-Standardize values before submitting or analyzing the dataset
+4)Apply to any BCDM field to prepare datasets for BOLD, GBIF, etc.
 
-By adapting the field and source vocabulary, this codebase becomes a reusable framework for validating any controlled-field in biodiversity data — making it especially useful for preparing datasets for submission to BOLD or GBIF.
-
+. This makes the tool a flexible framework for data standardization in biodiversity informatics.
 
 
 ## License
