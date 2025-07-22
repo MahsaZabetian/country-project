@@ -33,6 +33,7 @@ You need Python 3.7+ installed.
    Or manually:
    ```bash
   pip install pandas requests tqdm rapidfuzz country_converter
+  
   ---
 
 ## How to Use
