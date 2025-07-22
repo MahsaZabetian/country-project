@@ -19,6 +19,18 @@ This tool automates the correction and standardization of such country an d prov
 - Fuzzy string matching via **RapidFuzz**
 
 ---
+
+country-project/
+│
+├── geo_name_cleaner.py # Main script (this file)
+├── data/
+│ ├── raw/ # Input .tsv files (must contain 'verbatim_value' column)
+│ ├── cleaned/ # Output cleaned .tsv files (auto-created)
+│ └── BOLD_Geonames_mapping.tsv # Reference file for standard country names
+├── province_cache.json # Auto-generated cache of GeoNames provinces
+
+
+
 ## Installation
 
 You need Python 3.7+ installed.
@@ -31,9 +43,8 @@ You need Python 3.7+ installed.
    ```
 
    Or manually:
-   ```bash
+  ```bash
   pip install pandas requests tqdm rapidfuzz country_converter
-  
   ---
 
 ## How to Use
@@ -58,47 +69,69 @@ python geo_name_cleaner_realdata_improved.py
 Cleaned files will be saved to:
 ./data/cleaned/
 
+## Usage
+
+Place your raw .tsv files inside data/raw/
+
+Each file should include a column called verbatim_value.
+
+Ensure you have a file called BOLD_Geonames_mapping.tsv in data/
+
+This contains your reference list of standardized country names (one per line).
+
+Run the script:
+
+bash
+Copy
+Edit
+python geo_name_cleaner_realdata_improved.py
+Cleaned files will be saved to data/cleaned/
+
+A new column standardized_value will be added to each file.
+
 ## How It Works
 
-This tool combines three key strategies:
+build_alternate_country_map()
+Builds a dictionary of alternate country names using the country_converter library and a few manual mappings (e.g., "U.S.A." → "United States").
 
-1. fetch_provinces_from_geonames(username)
-Fetches first-order administrative divisions (provinces) from GeoNames and caches them locally.
+fetch_provinces_from_geonames(username)
+Fetches official province names using the GeoNames API and caches them in province_cache.json to avoid repeated API calls.
 
-2. build_alternate_country_map()
-Builds a dictionary of alternate country names using country_converter, extended with common abbreviations (e.g., "UAE", "DRC").
+load_reference_list(filepath)
+Reads a .tsv file (one name per line) and returns it as a Python list.
 
-3. load_reference_list(filepath)
-Loads standardized country names from a local .tsv file (from BOLD).
+classify_and_correct(...)
+Classifies each name in the input as either a country or province:
 
-4. classify_and_correct(...)
-Classifies user-entered names by:
+. Checks alternate names
 
-First checking the alternate name map
+. Uses fuzzy string matching to correct typos
 
-Then using rapidfuzz to find a fuzzy match in both country and province lists
+. Returns a label like "Canada (country)" or "Ontario (province)"
 
-5. clean_all_files(...)
-Runs the full cleaning pipeline on all .tsv files in the input folder and saves them to the output folder with a standardized_value column.
+clean_one_file(...)
+Processes one file: reads verbatim_value, applies correction, and writes output with standardized_value.
 
-## Function Overview
+clean_all_files(...)
+Processes all .tsv files in the data/raw/ folder and writes results to data/cleaned/.
 
-** build_alternate_country_map()
-  . Builds a map of alternate or informal country names to standardized ones. 
-  . Uses country_converter + custom logic.
+## Example Input/Output
 
-** load_reference_list(filepath)
-. Loads official country names from a BOLD .tsv file.
+Input (data/raw/sample.tsv):
 
-** fetch_provinces_from_geonames(username)
-. Fetches provinces via GeoNames and caches the result.
+verbatim_value
+USA
+British Colmbia
+U.A.E
+Ontari
 
-** classify_and_correct(...)
-. Core classifier: returns "Canada (country)", "Ontario (province)", or "Not Found".
+## Output (data/cleaned/sample.tsv):
 
-** clean_all_files(...)
-. Batch processes all raw .tsv files and saves the corrected versions.
-
+verbatim_value	standardized_value
+USA	            United States (country)
+British Colmbia	British Columbia (province)
+U.A.E	United Arab Emirates (country)
+Ontari	Ontario (province)
 
 
 ## Future Improvements
