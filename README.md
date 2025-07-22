@@ -47,7 +47,8 @@ You need Python 3.7+ installed.
   pip install pandas requests tqdm rapidfuzz country_converter
   ---
 
-## How to Use
+
+## How to use
 
 . Register for a free GeoNames account:
   https://www.geonames.org/login
