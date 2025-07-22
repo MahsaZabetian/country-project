@@ -84,9 +84,8 @@ Runs the full cleaning pipeline on all .tsv files in the input folder and saves 
 ## Function Overview
 
 ** build_alternate_country_map()
-. Builds a map of alternate or informal country names to standardized ones.
-
-. Uses country_converter + custom logic.
+  . Builds a map of alternate or informal country names to standardized ones. 
+  . Uses country_converter + custom logic.
 
 ** load_reference_list(filepath)
 . Loads official country names from a BOLD .tsv file.
